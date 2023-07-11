@@ -6,28 +6,27 @@ namespace RegexPerf
     [MemoryDiagnoser]
     public partial class RegexBenchmark
     {
-        public const string AuthorizationPathRegex = @"^[/a-zA-Z0-9-_]*/authorizations/[a-zA-Z0-9-_]+/?$";
-        public const string GeneralPathRegex = @"^[/a-zA-Z0-9-_]*/authorizations/([a-zA-Z0-9-_]+)/?[a-zA-Z0-9-_]*$";
-
-        private static readonly Regex SAuthorizationPathRegex = new(AuthorizationPathRegex, RegexOptions.Compiled);
-        private static readonly Regex SGeneralPathRegex = new(GeneralPathRegex, RegexOptions.Compiled);
+        public const string MastercardSchemeIdRegex = "^[0-9A-Z]{9}[0-9]{4}$";
+        public const string VisaSchemeIdRegex = "^[0-9]{15}$";
+        private static readonly TimeSpan _regexTimeout = TimeSpan.FromMilliseconds(100);
+        private static readonly Regex MastercardSchemeIdPattern = new(pattern: "^[0-9A-Z]{9}[0-9]{4}$", options: RegexOptions.Compiled, matchTimeout: _regexTimeout);
+        private static readonly Regex VisaSchemeIdPattern = new(pattern: "^[0-9]{15}$", options: RegexOptions.Compiled, matchTimeout: _regexTimeout);
 
         [Params(
-            "/authorizations/pay_weslgbe5fvfubohris4g3wbqya",
-            "authorizations/pay_zwvgrxqkfelunetid6xkrwxxgq/captures",
-            "process/amex")]
-        public string UrlPath { get; set; } = default!;
+            "E27T7ELT95641",
+            "990965296446484")]
+        public string SchemeId { get; set; } = default!;
 
         [Benchmark]
-        public bool IsAuthorizationPathRegex_Compiled() => SAuthorizationPathRegex.IsMatch(UrlPath);
+        public bool MastercardSchemeIdPattern_Compiled() => MastercardSchemeIdPattern.IsMatch(SchemeId);
 
         [Benchmark]
-        public bool IsGeneralPathRegex_Compiled() => SGeneralPathRegex.IsMatch(UrlPath);
+        public bool VisaSchemeIdPattern_Compiled() => VisaSchemeIdPattern.IsMatch(SchemeId);
 
         [Benchmark]
-        public bool IsAuthorizationPathRegex_NonCompiled() => Regex.IsMatch(UrlPath, AuthorizationPathRegex);
+        public bool MastercardRegex_NonCompiled() => Regex.IsMatch(SchemeId, MastercardSchemeIdRegex, RegexOptions.None, _regexTimeout);
 
         [Benchmark]
-        public bool IsGeneralPathRegex_NonCompiled() => Regex.IsMatch(UrlPath, GeneralPathRegex);
+        public bool VisaRegex_NonCompiled() => Regex.IsMatch(SchemeId, VisaSchemeIdRegex, RegexOptions.None, _regexTimeout);
     }
 }
